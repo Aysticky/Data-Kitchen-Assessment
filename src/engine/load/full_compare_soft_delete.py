@@ -10,7 +10,7 @@ from pyspark.sql import functions as F
 from engine.errors import LoadError
 
 if TYPE_CHECKING:
-    from pyspark.sql import DataFrame
+    from pyspark.sql import DataFrame, SparkSession
 
 # Column for tracking soft deletes from the Engine. This column is
 # injected into the target schema automatically.
@@ -35,7 +35,7 @@ class FullCompareSoftDeleteLoader:
         # Add the deleted_at column to source, set to NULL for all rows
         return source.withColumn(DELETED_AT_COLUMN, F.lit(None).cast("timestamp"))
 
-    def _ensure_target_schema(self, spark, target_path: str) -> None:
+    def _ensure_target_schema(self, spark: SparkSession, target_path: str) -> None:
         # Ensure the target table has the deleted_at column
 
         try:
