@@ -48,6 +48,21 @@ def test_soft_delete_without_primary_keys_is_rejected():
         ModelConfig(**raw)
 
 
+def test_soft_delete_rejects_domain_declared_deleted_at():
+    # Domain teams cannot declare deleted_at because it is engine-managed
+    raw = {
+        "layer": "gold",
+        "name": "bad_soft_delete",
+        "refresh": {"mode": "full_compare_soft_delete"},
+        "columns": [
+            {"name": "id", "data_type": "bigint", "primary_key": True},
+            {"name": "deleted_at", "data_type": "timestamp"},
+        ],
+    }
+    with pytest.raises(ValueError, match="deleted_at.*reserved"):
+        ModelConfig(**raw)
+
+
 def test_soft_delete_config_loads(models_dir):
     config = load_config(models_dir / "orders_audit.yaml")
     assert config.refresh.mode == LoadMode.FULL_COMPARE_SOFT_DELETE
