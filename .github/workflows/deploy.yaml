@@ -1,0 +1,98 @@
+name: Deploy
+
+# Runs on merges to main. Reads the engine config, validates it, plans
+# Terraform for the target environment, then applies. In the real
+# platform the Databricks credentials come from OIDC; here the apply
+# step is a no-op stub.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate-config:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.ctx.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.4"
+
+      - name: Install
+        run: uv sync --all-extras
+
+      - name: Validate engine configs
+        run: uv run pytest tests/test_config.py -q
+
+      - id: ctx
+        name: Resolve target environment
+        run: |
+          ENV="${{ inputs.environment || 'nonprd' }}"
+          echo "environment=$ENV" >> "$GITHUB_OUTPUT"
+
+  plan:
+    needs: [validate-config]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.validate-config.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform plan
+        working-directory: terraform
+        run: |
+          terraform plan \
+            -var="environment=${{ needs.validate-config.outputs.environment }}" \
+            -var="catalog_name=dk_${{ needs.validate-config.outputs.environment }}" \
+            -var="schema_name=engine_demo" \
+            -var="owner_group=data-platform" \
+            -out=tfplan
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+          retention-days: 1
+
+  apply:
+    needs: [validate-config, plan]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.validate-config.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform apply
+        # Scaffolding: real apply is gated off in the assessment repo
+        # because there is no live Databricks workspace to target. Do
+        # not modify this gate.
+        if: ${{ vars.ENABLE_REAL_DEPLOY == 'true' }}
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="environment=${{ needs.validate-config.outputs.environment }}" \
+            -var="catalog_name=dk_${{ needs.validate-config.outputs.environment }}" \
+            -var="schema_name=engine_demo" \
+            -var="owner_group=data-platform"

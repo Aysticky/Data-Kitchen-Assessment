@@ -1,0 +1,15 @@
+layer: bronze
+name: orders_raw
+description: Landing table for order events. Full overwrite every run.
+refresh:
+  mode: full
+columns:
+  - name: order_id
+    data_type: bigint
+    nullable: false
+  - name: customer_id
+    data_type: bigint
+  - name: amount
+    data_type: decimal
+  - name: created_at
+    data_type: timestamp
