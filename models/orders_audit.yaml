@@ -1,0 +1,19 @@
+layer: gold
+name: orders_audit
+description: Order history with deletion tracking for audit compliance.
+refresh:
+  mode: full_compare_soft_delete
+columns:
+  - name: order_id
+    data_type: bigint
+    nullable: false
+    primary_key: true
+  - name: customer_id
+    data_type: bigint
+    nullable: false
+  - name: order_date
+    data_type: date
+  - name: total_amount
+    data_type: decimal
+  - name: status
+    data_type: string
