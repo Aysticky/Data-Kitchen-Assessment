@@ -1,4 +1,4 @@
-"""``full_compare_soft_delete`` load mode: Delta MERGE with soft deletes"""
+"""``full_compare_soft_delete`` load mode: Delta MERGE with soft deletes."""
 
 from __future__ import annotations
 
@@ -18,7 +18,8 @@ DELETED_AT_COLUMN = "deleted_at"
 
 
 class FullCompareSoftDeleteLoader:
-    
+    """Loader for soft-delete mode."""
+
     def __init__(self, primary_keys: list[str]) -> None:
         # Create a loader bound to primary_keys
         if not primary_keys:
@@ -56,8 +57,7 @@ class FullCompareSoftDeleteLoader:
             pass
 
     def run(self, source: DataFrame, target_path: str) -> None:
-        # Run the soft-delete MERGE against the Delta table at target_path
-
+        """Run the soft-delete MERGE against the Delta table at target_path."""
         spark = source.sparkSession
         self._ensure_target_schema(spark, target_path)
 

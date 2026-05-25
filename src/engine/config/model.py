@@ -95,7 +95,7 @@ class ModelConfig(ConfigBaseModel):
                 "marked primary_key: true."
             )
             raise ValueError(msg)
-        
+
         # Soft-delete mode reserves deleted_at for engine use
         if self.refresh.mode == LoadMode.FULL_COMPARE_SOFT_DELETE:
             declared_columns = {c.name for c in self.columns}
@@ -106,3 +106,5 @@ class ModelConfig(ConfigBaseModel):
                     "Remove it from your column definitions."
                 )
                 raise ValueError(msg)
+
+        return self
