@@ -83,11 +83,28 @@ class ModelConfig(ConfigBaseModel):
 
         ``full_compare`` can only produce correct results if it has at
         least one primary key to match source rows against target rows.
+        ``full_compare_soft_delete`` has the same requirement.
+
+        ``full_compare_soft_delete`` also reserves the ``deleted_at`` column
+        for engine use so that domain teams must not declare it.
         """
-        if self.refresh.mode == LoadMode.FULL_COMPARE and not self.primary_keys:
+        modes_requiring_pk = {LoadMode.FULL_COMPARE, LoadMode.FULL_COMPARE_SOFT_DELETE}
+        if self.refresh.mode in modes_requiring_pk and not self.primary_keys:
             msg = (
-                "Load mode 'full_compare' requires at least one column "
+                f"Load mode '{self.refresh.mode.value}' requires at least one column "
                 "marked primary_key: true."
             )
             raise ValueError(msg)
+
+        # Soft-delete mode reserves deleted_at for engine use
+        if self.refresh.mode == LoadMode.FULL_COMPARE_SOFT_DELETE:
+            declared_columns = {c.name for c in self.columns}
+            if "deleted_at" in declared_columns:
+                msg = (
+                    "Column 'deleted_at' is reserved for load mode "
+                    "'full_compare_soft_delete' and is managed by the engine. "
+                    "Remove it from your column definitions."
+                )
+                raise ValueError(msg)
+
         return self

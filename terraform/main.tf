@@ -15,13 +15,23 @@ locals {
     for m in local.decoded_models : m.name => {
       load_mode = m.refresh.mode
       comment   = try(m.description, "")
-      columns = [
-        for c in m.columns : {
-          name      = c.name
-          data_type = c.data_type
-          nullable  = try(c.nullable, true)
-        }
-      ]
+      columns = concat(
+        [
+          for c in m.columns : {
+            name      = c.name
+            data_type = c.data_type
+            nullable  = try(c.nullable, true)
+          }
+        ],
+        # Inject the deleted_at column for soft-delete mode
+        m.refresh.mode == "full_compare_soft_delete" ? [
+          {
+            name      = "deleted_at"
+            data_type = "timestamp"
+            nullable  = true
+          }
+        ] : []
+      )
     }
   }
 }

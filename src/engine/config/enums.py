@@ -13,6 +13,7 @@ class LoadMode(StrEnum):
 
     FULL = "full"
     FULL_COMPARE = "full_compare"
+    FULL_COMPARE_SOFT_DELETE = "full_compare_soft_delete"
 
 
 class Layer(StrEnum):
