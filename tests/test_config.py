@@ -37,6 +37,22 @@ def test_full_compare_without_primary_keys_is_rejected():
     with pytest.raises(ValueError, match="primary_key"):
         ModelConfig(**raw)
 
+def test_soft_delete_without_primary_keys_is_rejected():
+    raw = {
+        "layer": "gold",
+        "name": "no_keys",
+        "refresh": {"mode": "full_compare_soft_delete"},
+        "columns": [{"name": "x", "data_type": "string"}],
+    }
+    with pytest.raises(ValueError, match="primary_key"):
+        ModelConfig(**raw)
+
+
+def test_soft_delete_config_loads(models_dir):
+    config = load_config(models_dir / "orders_audit.yaml")
+    assert config.refresh.mode == LoadMode.FULL_COMPARE_SOFT_DELETE
+    assert config.primary_keys == ["order_id"]
+
 
 def test_unknown_field_is_rejected():
     raw = {
