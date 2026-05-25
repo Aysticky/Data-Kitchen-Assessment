@@ -37,6 +37,7 @@ def test_full_compare_without_primary_keys_is_rejected():
     with pytest.raises(ValueError, match="primary_key"):
         ModelConfig(**raw)
 
+
 def test_soft_delete_without_primary_keys_is_rejected():
     raw = {
         "layer": "gold",

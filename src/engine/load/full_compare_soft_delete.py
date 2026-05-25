@@ -46,8 +46,7 @@ class FullCompareSoftDeleteLoader:
                 # Add the column with a SQL ALTER TABLE statement
                 table_name = f"delta.`{target_path}`"
                 spark.sql(
-                    f"ALTER TABLE {table_name} "
-                    f"ADD COLUMN {DELETED_AT_COLUMN} TIMESTAMP"
+                    f"ALTER TABLE {table_name} ADD COLUMN {DELETED_AT_COLUMN} TIMESTAMP"
                 )
         except Exception:
             # If the target does not exist, DeltaTable.forPath below will fail.

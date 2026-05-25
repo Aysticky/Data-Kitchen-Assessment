@@ -83,6 +83,7 @@ def test_full_compare_is_idempotent(spark, seeded_target):
 
 ## Soft-delete mode tests
 
+
 @pytest.fixture
 def soft_delete_seeded_target(spark, tmp_path):
     """Seed the target Delta table with three customer rows for soft delete tests."""
@@ -114,9 +115,7 @@ def test_soft_delete_marks_absent_rows_as_deleted(spark, soft_delete_seeded_targ
         ["customer_id", "email", "country"],
     )
 
-    loader = get_loader(
-        LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"]
-    )
+    loader = get_loader(LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"])
     loader.run(source, soft_delete_seeded_target)
 
     result_df = _read(spark, soft_delete_seeded_target)
@@ -143,9 +142,7 @@ def test_soft_delete_restores_reappearing_rows(spark, soft_delete_seeded_target)
         [(1, "alice@x.com", "NL"), (2, "bob@x.com", "BE")],
         ["customer_id", "email", "country"],
     )
-    loader = get_loader(
-        LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"]
-    )
+    loader = get_loader(LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"])
     loader.run(source_1, soft_delete_seeded_target)
 
     # Verify row 3 is soft-deleted
@@ -187,9 +184,7 @@ def test_soft_delete_updates_active_rows(spark, soft_delete_seeded_target):
         ["customer_id", "email", "country"],
     )
 
-    loader = get_loader(
-        LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"]
-    )
+    loader = get_loader(LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"])
     loader.run(source, soft_delete_seeded_target)
 
     result_df = _read(spark, soft_delete_seeded_target)
@@ -211,9 +206,7 @@ def test_soft_delete_inserts_new_rows(spark, soft_delete_seeded_target):
         ["customer_id", "email", "country"],
     )
 
-    loader = get_loader(
-        LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"]
-    )
+    loader = get_loader(LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"])
     loader.run(source, soft_delete_seeded_target)
 
     result_df = _read(spark, soft_delete_seeded_target)
@@ -229,9 +222,7 @@ def test_soft_delete_is_idempotent(spark, soft_delete_seeded_target):
         [(1, "alice@x.com", "NL"), (2, "bob@x.com", "BE")],  # row 3 absent
         ["customer_id", "email", "country"],
     )
-    loader = get_loader(
-        LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"]
-    )
+    loader = get_loader(LoadMode.FULL_COMPARE_SOFT_DELETE, primary_keys=["customer_id"])
 
     # Run twice
     loader.run(source, soft_delete_seeded_target)
@@ -246,4 +237,3 @@ def test_soft_delete_is_idempotent(spark, soft_delete_seeded_target):
     assert deleted_at_1 is not None
     assert deleted_at_1 == deleted_at_2
     assert result_2.count() == 3
-
