@@ -106,5 +106,3 @@ class ModelConfig(ConfigBaseModel):
                     "Remove it from your column definitions."
                 )
                 raise ValueError(msg)
-        
-        return self
