@@ -83,10 +83,12 @@ class ModelConfig(ConfigBaseModel):
 
         ``full_compare`` can only produce correct results if it has at
         least one primary key to match source rows against target rows.
+        ``full_compare_soft_delete`` has the same requirement.
         """
-        if self.refresh.mode == LoadMode.FULL_COMPARE and not self.primary_keys:
+        modes_requiring_pk = {LoadMode.FULL_COMPARE, LoadMode.FULL_COMPARE_SOFT_DELETE}
+        if self.refresh.mode in modes_requiring_pk and not self.primary_keys:
             msg = (
-                "Load mode 'full_compare' requires at least one column "
+                f"Load mode '{self.refresh.mode.value}' requires at least one column "
                 "marked primary_key: true."
             )
             raise ValueError(msg)
