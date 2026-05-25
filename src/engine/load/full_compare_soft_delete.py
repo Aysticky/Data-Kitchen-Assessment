@@ -49,8 +49,10 @@ class FullCompareSoftDeleteLoader:
                     f"ADD COLUMN {DELETED_AT_COLUMN} TIMESTAMP"
                 )
         except Exception:
-            # Target doesn't exist yet. It will be created by Terraform
-            # The first write will include the column from source.
+            # If the target does not exist, DeltaTable.forPath below will fail.
+            # In this engine, Terraform is expected to create the target table first.
+            # TODO: Narrow this exception to AnalysisException (table-not-found)
+            # to avoid hiding permission errors, schema conflicts, or path issues
             pass
 
     def run(self, source: DataFrame, target_path: str) -> None:
